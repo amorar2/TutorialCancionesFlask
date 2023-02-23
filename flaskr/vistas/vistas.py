@@ -9,7 +9,6 @@ usuario_shema = UsuarioSchema()
 
 
 class VistaCanciones(Resource):
-    @jwt_required()
     def get(self):
         return [cancion_schema.dump(c) for c in Cancion.query.all()]
 
