@@ -37,7 +37,6 @@ class VistaCanciones(Resource):
 
 class VistaCancion(Resource):
 
-    @jwt_required()
     def get(self, id_cancion):
         return cancion_schema.dump(Cancion.query.get_or_404(id_cancion))
 
