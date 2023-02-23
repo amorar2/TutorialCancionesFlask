@@ -3,7 +3,15 @@ from ..modelos import db, Cancion, Album, Usuario, CancionSchema, AlbumSchema, U
 from flask import request
 from flask_jwt_extended import jwt_required, create_access_token
 from datetime import datetime
-from ..tareas import registar_log
+from celery import Celery
+
+celery_app = Celery(__name__, broker='redis://localhost:7002/0')
+
+
+@celery_app.task(name='registrar_log')
+def registrar_log(*args):
+    pass
+
 
 cancion_schema = CancionSchema()
 album_shema = AlbumSchema()
@@ -159,7 +167,8 @@ class VistaLogIn(Resource):
         usuario = Usuario.query.filter_by(
             nombre=u_nombre, contrasena=u_contrasena).all()
         if usuario:
-            registar_log.delay(u_nombre, datetime.utcnow())
+            args = (u_nombre, datetime.utcnow())
+            registrar_log.apply_async(args=args, queue='logs')
             return {'mensaje': 'Inicio de sesión exitoso'}, 200
         else:
             return {'mensaje': 'Usuario no encontrado'}, 401
