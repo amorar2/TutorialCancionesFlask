@@ -1,0 +1,1 @@
+docker run --name redis-canciones-flask -p 7002:6379 -d redis

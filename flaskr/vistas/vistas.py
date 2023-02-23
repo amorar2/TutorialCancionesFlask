@@ -2,6 +2,8 @@ from flask_restful import Resource
 from ..modelos import db, Cancion, Album, Usuario, CancionSchema, AlbumSchema, UsuarioSchema
 from flask import request
 from flask_jwt_extended import jwt_required, create_access_token
+from datetime import datetime
+from ..tareas import registar_log
 
 cancion_schema = CancionSchema()
 album_shema = AlbumSchema()
@@ -157,6 +159,7 @@ class VistaLogIn(Resource):
         usuario = Usuario.query.filter_by(
             nombre=u_nombre, contrasena=u_contrasena).all()
         if usuario:
+            registar_log.delay(u_nombre, datetime.utcnow())
             return {'mensaje': 'Inicio de sesión exitoso'}, 200
         else:
             return {'mensaje': 'Usuario no encontrado'}, 401

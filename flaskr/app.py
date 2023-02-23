@@ -4,6 +4,7 @@ from .modelos import db
 from .vistas import VistaCanciones, VistaCancion, VistaAlbum, VistaCancionesAlbum, VistaAlbumsUsuario, VistaSignIn, VistaLogIn
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
+import redis
 
 app = create_app('default')
 app_context = app.app_context()
