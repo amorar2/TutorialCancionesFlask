@@ -1,4 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
+from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
+from marshmallow import fields
 import enum
 
 
@@ -6,8 +8,10 @@ db = SQLAlchemy()
 
 albumes_canciones = db.Table(
     'album_cancion',
-    db.Column('album_id', db.Integer, db.ForeignKey('album.id'), primary_key=True),
-    db.Column('cancion_id', db.Integer, db.ForeignKey('cancion.id'), primary_key=True)
+    db.Column('album_id', db.Integer, db.ForeignKey(
+        'album.id'), primary_key=True),
+    db.Column('cancion_id', db.Integer, db.ForeignKey(
+        'cancion.id'), primary_key=True)
 )
 
 
@@ -38,6 +42,9 @@ class Album(db.Model):
     canciones = db.relationship(
         'Cancion', secondary='album_cancion', back_populates="albumes"
     )
+    __table_args__ = (
+        db.UniqueConstraint('usuario', 'titulo', name='titulo_unico_album'),
+    )
 
 
 class Usuario(db.Model):
@@ -45,3 +52,33 @@ class Usuario(db.Model):
     nombre = db.Column(db.String(50))
     contrasena = db.Column(db.String(50))
     albumes = db.relationship('Album', cascade='all, delete, delete-orphan')
+
+
+class EnumToDict(fields.Field):
+    def _serialize_(self, value, attr, obj, **kwargs):
+        if value is None:
+            return None
+        return {'llave': value.name, 'valor': value.value}
+
+
+class AlbumSchema(SQLAlchemyAutoSchema):
+    medio = EnumToDict(attribute=('medio'))
+
+    class Meta:
+        model = Album
+        include_relationships = True
+        load_instance = True
+
+
+class CancionSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Cancion
+        include_relationships = True
+        load_instance = True
+
+
+class UsuarioSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Usuario
+        include_relationships = True
+        load_instance = True
